@@ -9,6 +9,10 @@ export default {
       db: null,
       ready: false,
       activities: [],
+      totalActivities: 0,
+      totalPositiveActivities: 0,
+      totalNegativeActivities: 0,
+      totalNeutralActivities: 0,
 
       data: {
         name: "",
@@ -51,6 +55,8 @@ export default {
     this.activities = this.activities.filter((d) => {
       return d.time == this.time;
     });
+
+    this.getTotalAnctivities();
   },
   methods: {
     async getId(id) {
@@ -116,7 +122,26 @@ export default {
         };
       });
     },
+    async getTotalAnctivities() {
+      this.totalPositiveActivities = Object.keys(
+        this.activities.filter((d) => {
+          return d.value == "+";
+        })
+      ).length;
 
+      this.totalNegativeActivities = Object.keys(
+        this.activities.filter((d) => {
+          return d.value == "-";
+        })
+      ).length;
+
+      this.totalNeutralActivities = Object.keys(
+        this.activities.filter((d) => {
+          return d.value == "=";
+        })
+      ).length;
+      this.totalActivities = Object.keys(this.activities).length;
+    },
     async addActivity() {
       if (this.data.name == "") {
         this.errors.name = "Nama masing kosong";
@@ -156,6 +181,8 @@ export default {
 
         this.data.name = "";
         this.data.value = "";
+
+        this.getTotalAnctivities();
       }
     },
 
@@ -199,6 +226,8 @@ export default {
 
         this.data.name = "";
         this.data.value = "";
+
+        this.getTotalAnctivities();
       }
     },
 
@@ -227,6 +256,8 @@ export default {
     async deleteActivity(id) {
       await this.deleteActivityFromDb(id);
       this.activities = await this.getActivitiesFromDb();
+
+      this.getTotalAnctivities();
     },
 
     async deleteActivityFromDb(id) {
@@ -373,6 +404,16 @@ export default {
           </tr>
         </tbody>
       </table>
+
+      <p class="mt-4">
+        Positive: {{ totalPositiveActivities }}
+        <br />
+        Negative: {{ totalNegativeActivities }}
+        <br />
+        Neutral: {{ totalNeutralActivities }}
+        <br />
+        Total: {{ totalActivities }}
+      </p>
     </div>
   </div>
 </template>
