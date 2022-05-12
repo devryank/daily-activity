@@ -20,6 +20,9 @@ export default {
       },
       todayName: "",
       time: "",
+
+      id: null,
+      openEdit: false,
     };
   },
   async created() {
@@ -51,6 +54,9 @@ export default {
   },
   methods: {
     async getId(id) {
+      this.id = id;
+      this.openEdit = true;
+
       const request = this.db
         .transaction("activities")
         .objectStore("activities")
@@ -165,6 +171,59 @@ export default {
       });
     },
 
+    async updateActivity(id) {
+      if (this.data.name == "") {
+        this.errors.name = "Nama masing kosong";
+      } else {
+        this.errors.name = "";
+      }
+
+      if (
+        this.data.value != "+" &&
+        this.data.value != "-" &&
+        this.data.value != "="
+      ) {
+        this.errors.value = `Value harus diisi dengan "+", "-", atau "="`;
+      } else {
+        this.errors.value = "";
+      }
+
+      if (this.errors.name == "" && this.errors.value == "") {
+        this.errors.name = "";
+        this.errors.value = "";
+        this.id = null;
+        this.openEdit = false;
+
+        await this.updateActivityFromDb(id);
+        this.activities = await this.getActivitiesFromDb();
+
+        this.data.name = "";
+        this.data.value = "";
+      }
+    },
+
+    async updateActivityFromDb(id) {
+      const objectStore = this.db
+        .transaction("activities", "readwrite")
+        .objectStore("activities");
+
+      const request = objectStore.get(id);
+
+      request.onsuccess = (e) => {
+        const activity = e.target.result;
+
+        activity.name = this.data.name;
+        activity.value = this.data.value;
+        activity.time = this.time;
+
+        // Create a request to update
+        const updateRequest = objectStore.put(activity);
+
+        updateRequest.onsuccess = () => {
+          console.log(`Acitivty updated`);
+        };
+      };
+    },
     async deleteActivity(id) {
       await this.deleteActivityFromDb(id);
       this.activities = await this.getActivitiesFromDb();
@@ -202,7 +261,7 @@ export default {
       <small class="text-red-600 text-sm">{{ errors.value }}</small>
       <br />
       <button
-        v-if="ready"
+        v-if="ready && !openEdit"
         @click="addActivity"
         class="
           dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
@@ -213,6 +272,32 @@ export default {
       >
         Tambah
       </button>
+
+      <div v-if="ready && openEdit">
+        <button
+          @click="updateActivity(id)"
+          class="
+            dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
+            py-2
+            px-4
+            my-3
+            mr-2
+          "
+        >
+          Edit
+        </button>
+        <button
+          @click="openEdit = false"
+          class="
+            dark:bg-gray-800 dark:text-white dark:hover:bg-gray-600
+            py-2
+            px-4
+            my-3
+          "
+        >
+          Batal
+        </button>
+      </div>
 
       <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead
