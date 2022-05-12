@@ -38,10 +38,13 @@ export default {
       ("0" + (timestamp.getMonth() + 1)).slice(-2) +
       "-" +
       timestamp.getFullYear();
+
+    this.activities = this.activities.filter((d) => {
+      return d.time == this.time;
+    });
   },
   methods: {
     async getId(id) {
-      console.log(id);
       const request = this.db
         .transaction("activities")
         .objectStore("activities")
