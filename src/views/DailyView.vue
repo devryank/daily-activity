@@ -114,16 +114,24 @@ export default {
     async addActivity() {
       if (this.data.name == "") {
         this.errors.name = "Nama masing kosong";
-      } else if (
+      } else {
+        this.errors.name = "";
+      }
+
+      if (
         this.data.value != "+" &&
         this.data.value != "-" &&
         this.data.value != "="
       ) {
-        console.log(this.data.value);
         this.errors.value = `Value harus diisi dengan "+", "-", atau "="`;
       } else {
+        this.errors.value = "";
+      }
+
+      if (this.errors.name == "" && this.errors.value == "") {
         this.errors.name = "";
         this.errors.value = "";
+
         let timestamp = new Date(Date.now());
         let activity = {
           name: this.data.name,
@@ -137,7 +145,11 @@ export default {
         };
         console.log("about to add " + JSON.stringify(activity));
         await this.addActivityToDb(activity);
+
         this.activities = await this.getActivitiesFromDb();
+
+        this.data.name = "";
+        this.data.value = "";
       }
     },
 
