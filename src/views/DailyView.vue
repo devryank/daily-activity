@@ -10,8 +10,14 @@ export default {
       ready: false,
       activities: [],
 
-      name: "",
-      value: "",
+      data: {
+        name: "",
+        value: "",
+      },
+      errors: {
+        name: "",
+        value: "",
+      },
       todayName: "",
       time: "",
     };
@@ -53,8 +59,8 @@ export default {
       request.onsuccess = () => {
         const activity = request.result;
 
-        this.name = activity.name;
-        this.value = activity.value;
+        this.data.name = activity.name;
+        this.data.value = activity.value;
       };
 
       request.onerror = (err) => {
@@ -106,20 +112,33 @@ export default {
     },
 
     async addActivity() {
-      let timestamp = new Date(Date.now());
-      let activity = {
-        name: this.name,
-        value: this.value,
-        time:
-          ("0" + timestamp.getDate()).slice(-2) +
-          "-" +
-          ("0" + (timestamp.getMonth() + 1)).slice(-2) +
-          "-" +
-          timestamp.getFullYear(),
-      };
-      console.log("about to add " + JSON.stringify(activity));
-      await this.addActivityToDb(activity);
-      this.activities = await this.getActivitiesFromDb();
+      if (this.data.name == "") {
+        this.errors.name = "Nama masing kosong";
+      } else if (
+        this.data.value != "+" &&
+        this.data.value != "-" &&
+        this.data.value != "="
+      ) {
+        console.log(this.data.value);
+        this.errors.value = `Value harus diisi dengan "+", "-", atau "="`;
+      } else {
+        this.errors.name = "";
+        this.errors.value = "";
+        let timestamp = new Date(Date.now());
+        let activity = {
+          name: this.data.name,
+          value: this.data.value,
+          time:
+            ("0" + timestamp.getDate()).slice(-2) +
+            "-" +
+            ("0" + (timestamp.getMonth() + 1)).slice(-2) +
+            "-" +
+            timestamp.getFullYear(),
+        };
+        console.log("about to add " + JSON.stringify(activity));
+        await this.addActivityToDb(activity);
+        this.activities = await this.getActivitiesFromDb();
+      }
     },
 
     async addActivityToDb(activity) {
@@ -161,12 +180,14 @@ export default {
     <div class="w-3/4 mx-auto relative overflow-x-auto shadow-md mt-10">
       <h2 class="text-xl mb-5">{{ todayName }}, {{ time }}</h2>
       <label for="Name">Name</label>
-      <input type="text" v-model="name" class="mx-2 text-black" />
+      <input type="text" v-model="data.name" class="mx-2 text-black" />
+      <small class="text-red-600 text-sm">{{ errors.name }}</small>
       <br />
       <br />
 
       <label for="Value">Value</label>
-      <input type="text" v-model="value" class="mx-2 text-black" />
+      <input type="text" v-model="data.value" class="mx-2 text-black" />
+      <small class="text-red-600 text-sm">{{ errors.value }}</small>
       <br />
       <button
         v-if="ready"
