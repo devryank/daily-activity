@@ -279,141 +279,139 @@ export default {
 </script>
 <template>
   <div>
-    <div class="w-3/4 mx-auto relative overflow-x-auto shadow-md mt-10">
-      <h2 class="text-xl mb-5">{{ todayName }}, {{ time }}</h2>
-      <label for="Name">Name</label>
-      <input type="text" v-model="data.name" class="mx-2 text-black" />
-      <small class="text-red-600 text-sm">{{ errors.name }}</small>
-      <br />
-      <br />
+    <h2 class="text-xl mb-5">{{ todayName }}, {{ time }}</h2>
+    <label for="Name">Name</label>
+    <input type="text" v-model="data.name" class="mx-2 text-black" />
+    <small class="text-red-600 text-sm">{{ errors.name }}</small>
+    <br />
+    <br />
 
-      <label for="Value">Value</label>
-      <input type="text" v-model="data.value" class="mx-2 text-black" />
-      <small class="text-red-600 text-sm">{{ errors.value }}</small>
-      <br />
+    <label for="Value">Value</label>
+    <input type="text" v-model="data.value" class="mx-2 text-black" />
+    <small class="text-red-600 text-sm">{{ errors.value }}</small>
+    <br />
+    <button
+      v-if="ready && !openEdit"
+      @click="addActivity"
+      class="
+        dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
+        py-2
+        px-4
+        my-3
+      "
+    >
+      Tambah
+    </button>
+
+    <div v-if="ready && openEdit">
       <button
-        v-if="ready && !openEdit"
-        @click="addActivity"
+        @click="updateActivity(id)"
         class="
           dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
           py-2
           px-4
           my-3
+          mr-2
         "
       >
-        Tambah
+        Edit
       </button>
-
-      <div v-if="ready && openEdit">
-        <button
-          @click="updateActivity(id)"
-          class="
-            dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
-            py-2
-            px-4
-            my-3
-            mr-2
-          "
-        >
-          Edit
-        </button>
-        <button
-          @click="openEdit = false"
-          class="
-            dark:bg-gray-800 dark:text-white dark:hover:bg-gray-600
-            py-2
-            px-4
-            my-3
-          "
-        >
-          Batal
-        </button>
-      </div>
-
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-        <thead
-          class="
-            text-xs text-gray-700
-            uppercase
-            bg-gray-50
-            dark:bg-gray-700 dark:text-gray-400
-          "
-        >
-          <tr>
-            <th scope="col" class="px-6 py-3" width="50%">Daily Habits</th>
-            <th scope="col" class="px-6 py-3">
-              POSITIVE (+), NEGATIVE (-), OR NEUTRAL (=)
-            </th>
-            <th scope="col" class="px-6 py-3">
-              <span class="sr-only">Edit</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            class="
-              border-b
-              dark:bg-gray-800 dark:border-gray-700
-              odd:bg-white
-              even:bg-gray-50
-              odd:dark:bg-gray-800
-              even:dark:bg-gray-700
-            "
-            v-for="(activity, index) in activities"
-            :key="index"
-          >
-            <th
-              scope="row"
-              class="
-                px-6
-                py-4
-                font-medium
-                text-gray-900
-                dark:text-white
-                whitespace-nowrap
-              "
-            >
-              {{ activity.name }}
-            </th>
-            <td class="px-6 py-4">{{ activity.value }}</td>
-            <td class="px-6 py-4 text-right">
-              <a
-                href="#"
-                class="
-                  mr-2
-                  font-medium
-                  text-blue-600
-                  dark:text-blue-500
-                  hover:underline
-                "
-                @click="getId(activity.id)"
-                >Edit</a
-              >
-              <a
-                href="#"
-                class="
-                  font-medium
-                  text-blue-600
-                  dark:text-blue-500
-                  hover:underline
-                "
-                @click="deleteActivity(activity.id)"
-                >Delete</a
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p class="mt-4">
-        Positive: {{ totalPositiveActivities }}
-        <br />
-        Negative: {{ totalNegativeActivities }}
-        <br />
-        Neutral: {{ totalNeutralActivities }}
-        <br />
-        Total: {{ totalActivities }}
-      </p>
+      <button
+        @click="openEdit = false"
+        class="
+          dark:bg-gray-800 dark:text-white dark:hover:bg-gray-600
+          py-2
+          px-4
+          my-3
+        "
+      >
+        Batal
+      </button>
     </div>
+
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead
+        class="
+          text-xs text-gray-700
+          uppercase
+          bg-gray-50
+          dark:bg-gray-700 dark:text-gray-400
+        "
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3" width="50%">Daily Habits</th>
+          <th scope="col" class="px-6 py-3">
+            POSITIVE (+), NEGATIVE (-), OR NEUTRAL (=)
+          </th>
+          <th scope="col" class="px-6 py-3">
+            <span class="sr-only">Edit</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="
+            border-b
+            dark:bg-gray-800 dark:border-gray-700
+            odd:bg-white
+            even:bg-gray-50
+            odd:dark:bg-gray-800
+            even:dark:bg-gray-700
+          "
+          v-for="(activity, index) in activities"
+          :key="index"
+        >
+          <th
+            scope="row"
+            class="
+              px-6
+              py-4
+              font-medium
+              text-gray-900
+              dark:text-white
+              whitespace-nowrap
+            "
+          >
+            {{ activity.name }}
+          </th>
+          <td class="px-6 py-4">{{ activity.value }}</td>
+          <td class="px-6 py-4 text-right">
+            <a
+              href="#"
+              class="
+                mr-2
+                font-medium
+                text-blue-600
+                dark:text-blue-500
+                hover:underline
+              "
+              @click="getId(activity.id)"
+              >Edit</a
+            >
+            <a
+              href="#"
+              class="
+                font-medium
+                text-blue-600
+                dark:text-blue-500
+                hover:underline
+              "
+              @click="deleteActivity(activity.id)"
+              >Delete</a
+            >
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-4">
+      Positive: {{ totalPositiveActivities }}
+      <br />
+      Negative: {{ totalNegativeActivities }}
+      <br />
+      Neutral: {{ totalNeutralActivities }}
+      <br />
+      Total: {{ totalActivities }}
+    </p>
   </div>
 </template>
