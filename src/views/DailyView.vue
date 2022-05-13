@@ -56,7 +56,7 @@ export default {
       return d.time == this.time;
     });
     console.log(timestamp.getDay());
-    this.getTotalAnctivities();
+    this.getTotalActivities();
   },
   methods: {
     async getId(id) {
@@ -120,9 +120,25 @@ export default {
             cursor.continue();
           }
         };
+        this.filterToday();
       });
     },
-    async getTotalAnctivities() {
+
+    async filterToday() {
+      let timestamp = new Date(Date.now());
+      this.time =
+        ("0" + (timestamp.getMonth() + 1)).slice(-2) +
+        "/" +
+        ("0" + timestamp.getDate()).slice(-2) +
+        "/" +
+        timestamp.getFullYear();
+
+      this.activities = this.activities.filter((d) => {
+        return d.time == this.time;
+      });
+    },
+
+    async getTotalActivities() {
       this.totalPositiveActivities = Object.keys(
         this.activities.filter((d) => {
           return d.value == "+";
@@ -178,11 +194,12 @@ export default {
         await this.addActivityToDb(activity);
 
         this.activities = await this.getActivitiesFromDb();
+        this.filterToday();
 
         this.data.name = "";
         this.data.value = "";
 
-        this.getTotalAnctivities();
+        this.getTotalActivities();
       }
     },
 
@@ -223,11 +240,12 @@ export default {
 
         await this.updateActivityFromDb(id);
         this.activities = await this.getActivitiesFromDb();
+        this.filterToday();
 
         this.data.name = "";
         this.data.value = "";
 
-        this.getTotalAnctivities();
+        this.getTotalActivities();
       }
     },
 
@@ -256,8 +274,9 @@ export default {
     async deleteActivity(id) {
       await this.deleteActivityFromDb(id);
       this.activities = await this.getActivitiesFromDb();
+      this.filterToday();
 
-      this.getTotalAnctivities();
+      this.getTotalActivities();
     },
 
     async deleteActivityFromDb(id) {
