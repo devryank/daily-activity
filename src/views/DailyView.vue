@@ -79,6 +79,7 @@ export default {
         console.error(`Error to get activity information: ${err}`);
       };
     },
+
     async getDb() {
       return new Promise((resolve, reject) => {
         let request = window.indexedDB.open(this.DB_NAME, this.DB_VERSION);
@@ -158,6 +159,37 @@ export default {
       ).length;
       this.totalActivities = Object.keys(this.activities).length;
     },
+
+    async addDummyActivity() {
+      this.errors.name = "";
+      this.errors.value = "";
+
+      let timestamp = new Date(Date.now());
+
+      let dummy = {
+        name: (Math.random() + 1).toString(36).substring(7),
+        value: ["+", "-", "="][
+          Math.floor(Math.random() * ["+", "-", "="].length)
+        ],
+        time:
+          "04" +
+          "/" +
+          ("0" + timestamp.getDate()).slice(-2) +
+          "/" +
+          timestamp.getFullYear(),
+      };
+
+      console.log("about to add " + JSON.stringify(dummy));
+      await this.addActivityToDb(dummy);
+
+      this.activities = await this.getActivitiesFromDb();
+
+      this.data.name = "";
+      this.data.value = "";
+
+      this.getTotalActivities();
+    },
+
     async addActivity() {
       if (this.data.name == "") {
         this.errors.name = "Nama masing kosong";
@@ -180,6 +212,7 @@ export default {
         this.errors.value = "";
 
         let timestamp = new Date(Date.now());
+
         let activity = {
           name: this.data.name,
           value: this.data.value,
