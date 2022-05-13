@@ -46,16 +46,16 @@ export default {
     let timestamp = new Date(Date.now());
     this.todayName = days[timestamp.getDay()];
     this.time =
-      ("0" + timestamp.getDate()).slice(-2) +
-      "-" +
       ("0" + (timestamp.getMonth() + 1)).slice(-2) +
-      "-" +
+      "/" +
+      ("0" + timestamp.getDate()).slice(-2) +
+      "/" +
       timestamp.getFullYear();
 
     this.activities = this.activities.filter((d) => {
       return d.time == this.time;
     });
-
+    console.log(timestamp.getDay());
     this.getTotalAnctivities();
   },
   methods: {
@@ -168,10 +168,10 @@ export default {
           name: this.data.name,
           value: this.data.value,
           time:
-            ("0" + timestamp.getDate()).slice(-2) +
-            "-" +
             ("0" + (timestamp.getMonth() + 1)).slice(-2) +
-            "-" +
+            "/" +
+            ("0" + timestamp.getDate()).slice(-2) +
+            "/" +
             timestamp.getFullYear(),
         };
         console.log("about to add " + JSON.stringify(activity));
