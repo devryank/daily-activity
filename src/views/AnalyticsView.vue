@@ -17,10 +17,11 @@ export default {
   async created() {
     this.db = await this.getDb();
     this.activities = await this.getActivitiesFromDb();
+    console.log(this.activities);
     this.ready = true;
-    await this.getWeekActivities(new Date(Date.now()));
-    // var dateString = "05/13/2022";
-
+    // await this.getWeekActivities(new Date(Date.now()));
+    // let dateString = "05/13/2022";
+    this.getWeekActivities();
     // console.log(new Date(dateString));
   },
   methods: {
@@ -67,20 +68,24 @@ export default {
         };
       });
     },
-    async getWeekActivities(date) {
+
+    async getWeekActivities() {
+      this.period = "week";
       // If no date object supplied, use current date
       // Copy date so don't modify supplied date
-      var now = date ? new Date(date) : new Date();
+      let date = new Date(Date.now());
+      let now = date ? new Date(date) : new Date();
 
       // set time to some convenient value
       now.setHours(0, 0, 0, 0);
 
+      this.activities = await this.getActivitiesFromDb();
       // Get the previous Sunday
-      var sunday = new Date(now);
+      let sunday = new Date(now);
       sunday.setDate(sunday.getDate() - sunday.getDay());
 
       // Get next Saturday
-      var saturday = new Date(now);
+      let saturday = new Date(now);
       saturday.setDate(saturday.getDate() - saturday.getDay() + 6);
 
       // get this week activities
@@ -88,10 +93,42 @@ export default {
         return new Date(d.time) >= sunday && new Date(d.time) < saturday;
       });
 
-      this.getTotalAnctivities();
+      this.getTotalActivities();
     },
 
-    async getTotalAnctivities() {
+    async getMonthActivities() {
+      this.period = "month";
+      // If no date object supplied, use current date
+      // Copy date so don't modify supplied date
+      let date = new Date(Date.now());
+      let start = date ? new Date(date) : new Date();
+
+      // set time to some convenient value
+      start.setHours(0, 0, 0, 0);
+
+      this.activities = await this.getActivitiesFromDb();
+      // Get the first Month
+      let firstDay = new Date(start);
+      firstDay = new Date(firstDay.getFullYear(), firstDay.getMonth(), 1);
+      // console.log(new Date(firstDay.getFullYear(), firstDay.getMonth(), 1));
+
+      start.setHours(23);
+
+      let lastDay = new Date(start);
+      lastDay = new Date(lastDay.getFullYear(), lastDay.getMonth() + 1, 0);
+
+      // get this month activities
+      this.activities = this.activities.filter((d) => {
+        return new Date(d.time) >= firstDay && new Date(d.time) < lastDay;
+      });
+      console.log(firstDay);
+      console.log(lastDay);
+      console.log(this.activities);
+      this.getTotalActivities();
+      // this.getTotalActivities();
+    },
+
+    async getTotalActivities() {
       this.totalPositiveActivities = Object.keys(
         this.activities.filter((d) => {
           return d.value == "+";
@@ -159,6 +196,7 @@ export default {
           class="grid grid-rows-1 mx-5 p-7 my-auto bg-emerald-700 rounded-lg"
         >
           <font-awesome-icon icon="plus" class="text-2xl" />
+          <!-- <h3 class="text-4xl">+</h3> -->
         </div>
         <div class="grid grid-rows-2">
           <h2 class="text-lg">Positive</h2>
@@ -170,6 +208,7 @@ export default {
       <div class="flex my-5">
         <div class="grid grid-rows-1 mx-5 p-7 my-auto bg-rose-700 rounded-lg">
           <font-awesome-icon icon="minus" class="text-2xl" />
+          <!-- <h3 class="text-4xl">-</h3> -->
         </div>
         <div class="grid grid-rows-2">
           <h2 class="text-lg">Negative</h2>
@@ -181,6 +220,7 @@ export default {
       <div class="flex my-5">
         <div class="grid grid-rows-1 mx-5 p-7 my-auto bg-indigo-700 rounded-lg">
           <font-awesome-icon icon="equals" class="text-2xl" />
+          <!-- <h3 class="text-4xl">=</h3> -->
         </div>
         <div class="grid grid-rows-2">
           <h2 class="text-lg">Neutral</h2>
