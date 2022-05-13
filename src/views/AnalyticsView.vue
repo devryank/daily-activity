@@ -7,6 +7,7 @@ export default {
       db: null,
       ready: false,
       activities: [],
+      period: "week",
       totalActivities: 0,
       totalPositiveActivities: 0,
       totalNegativeActivities: 0,
@@ -117,41 +118,39 @@ export default {
 <template>
   <div class="grid grid-cols-12 gap-4 text-white">
     <div class="col-span-12 my-5 mx-auto">
-      <a
-        href=""
-        class="
-          mx-1
-          py-3
-          px-6
-          dark:bg-transparent
-          border-2 border-indigo-800
-          dark:text-white dark:hover:bg-indigo-600 dark:hover:border-indigo-600
+      <button
+        @click="getWeekActivities"
+        :class="
+          'mr-2 py-3 px-6' +
+          (period == 'week'
+            ? ' dark:bg-transparent border-2 border-indigo-800 text-indigo-800 dark:text-white dark:hover:bg-indigo-600 hover:border-indigo-600'
+            : ' bg-indigo-800 dark:text-white hover:bg-indigo-600')
         "
       >
         Minggu Ini
-      </a>
-      <a
-        href=""
-        class="
-          mx-1
-          py-3
-          px-6
-          dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
+      </button>
+      <button
+        @click="getMonthActivities"
+        :class="
+          'mr-2 py-3 px-6' +
+          (period == 'month'
+            ? ' dark:bg-transparent border-2 border-indigo-800 text-indigo-800 dark:text-white dark:hover:bg-indigo-600 hover:border-indigo-600'
+            : ' bg-indigo-800 dark:text-white hover:bg-indigo-600')
         "
       >
         Bulan Ini
-      </a>
-      <a
-        href=""
-        class="
-          mx-1
-          py-3
-          px-6
-          dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
+      </button>
+      <button
+        @click="getWeekActivities"
+        :class="
+          'mr-2 py-3 px-6' +
+          (period == 'year'
+            ? ' dark:bg-transparent border-2 border-indigo-800 dark:text-white hover:bg-indigo-600 hover:border-indigo-600'
+            : ' bg-indigo-800 dark:text-white hover:bg-indigo-600')
         "
       >
         Tahun Ini
-      </a>
+      </button>
     </div>
 
     <div class="col-span-4 bg-emerald-600 rounded-lg">
