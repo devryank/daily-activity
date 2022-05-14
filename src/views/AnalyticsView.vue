@@ -103,27 +103,20 @@ export default {
       let date = new Date(Date.now());
       let start = date ? new Date(date) : new Date();
 
-      // set time to some convenient value
-      start.setHours(0, 0, 0, 0);
-
       this.activities = await this.getActivitiesFromDb();
       // Get the first Month
       let firstDay = new Date(start);
       firstDay = new Date(firstDay.getFullYear(), firstDay.getMonth(), 1);
       // console.log(new Date(firstDay.getFullYear(), firstDay.getMonth(), 1));
 
-      start.setHours(23);
-
       let lastDay = new Date(start);
       lastDay = new Date(lastDay.getFullYear(), lastDay.getMonth() + 1, 0);
+      lastDay = new Date(lastDay.setHours(23, 59, 59, 999));
 
       // get this month activities
       this.activities = this.activities.filter((d) => {
         return new Date(d.time) >= firstDay && new Date(d.time) < lastDay;
       });
-      console.log(firstDay);
-      console.log(lastDay);
-      console.log(this.activities);
       this.getTotalActivities();
       // this.getTotalActivities();
     },
