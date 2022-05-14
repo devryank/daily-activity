@@ -1,5 +1,11 @@
 <script>
+import Vue3ChartJs from "@j-t-mcc/vue3-chartjs";
 export default {
+  components: {
+    Vue3ChartJs,
+  },
+  setup() {},
+
   data() {
     return {
       DB_NAME: "acitivitydb",
@@ -12,19 +18,75 @@ export default {
       totalPositiveActivities: 0,
       totalNegativeActivities: 0,
       totalNeutralActivities: 0,
+      pieChart: {},
+
+      groupDate: [],
+      groupDay: [],
+      chartPositiveActivities: [],
+      chartNegativeActivities: [],
+      chartNeutralActivities: [],
     };
   },
   async created() {
     this.db = await this.getDb();
     this.activities = await this.getActivitiesFromDb();
-    console.log(this.activities);
+    // console.log(this.activities);
     this.ready = true;
     // await this.getWeekActivities(new Date(Date.now()));
     // let dateString = "05/13/2022";
-    this.getWeekActivities();
+    await this.getWeekActivities();
     // console.log(new Date(dateString));
+
+    this.pieChart = await this.makeChart();
   },
   methods: {
+    async makeChart() {
+      for (let i = 0; i < this.groupDay.length; i++) {
+        // console.log(this.groupDate[i]);
+        this.chartPositiveActivities[i] = this.groupDay[i].positive;
+        this.chartNegativeActivities[i] = this.groupDay[i].negative;
+        this.chartNeutralActivities[i] = this.groupDay[i].neutral;
+      }
+      let pieChart = {
+        type: "line",
+        data: {
+          labels: this.groupDate,
+          datasets: [
+            {
+              label: "Positif",
+              borderColor: "#059669",
+              data: this.chartPositiveActivities,
+            },
+            {
+              label: "Negatif",
+              borderColor: "#E11D48",
+              data: this.chartNegativeActivities,
+            },
+            {
+              label: "Netral",
+              borderColor: "#4F46E5",
+              data: this.chartNeutralActivities,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          interaction: {
+            intersect: false,
+            axis: "x",
+          },
+          scales: {
+            y: {
+              ticks: {
+                // forces step size to be 50 units
+                stepSize: 1,
+              },
+            },
+          },
+        },
+      };
+      return pieChart;
+    },
     async getDb() {
       return new Promise((resolve, reject) => {
         let request = window.indexedDB.open(this.DB_NAME, this.DB_VERSION);
@@ -69,6 +131,19 @@ export default {
       });
     },
 
+    getDatesInRange(startDate, endDate) {
+      const date = new Date(startDate.getTime());
+
+      const dates = [];
+
+      while (date <= endDate) {
+        dates.push(new Date(date));
+        date.setDate(date.getDate() + 1);
+      }
+
+      return dates;
+    },
+
     async getWeekActivities() {
       this.period = "week";
       // If no date object supplied, use current date
@@ -80,6 +155,7 @@ export default {
       now.setHours(0, 0, 0, 0);
 
       this.activities = await this.getActivitiesFromDb();
+
       // Get the previous Sunday
       let sunday = new Date(now);
       sunday.setDate(sunday.getDate() - sunday.getDay());
@@ -87,11 +163,61 @@ export default {
       // Get next Saturday
       let saturday = new Date(now);
       saturday.setDate(saturday.getDate() - saturday.getDay() + 6);
+      saturday = new Date(saturday.setHours(23, 59, 59, 999));
+
+      let dateInRange = this.getDatesInRange(sunday, saturday);
 
       // get this week activities
       this.activities = this.activities.filter((d) => {
         return new Date(d.time) >= sunday && new Date(d.time) < saturday;
       });
+
+      // let previousDay = "";
+      let tempGroupDay = [];
+      let groupDay = [];
+      for (let index = 0; index < dateInRange.length; index++) {
+        tempGroupDay.push(dateInRange[index]);
+      }
+
+      let groupDate = [];
+      for (let j = 0; j < tempGroupDay.length; j++) {
+        groupDay[j] = tempGroupDay[j];
+        groupDay[j]["positive"] = 0;
+        groupDay[j]["negative"] = 0;
+        groupDay[j]["neutral"] = 0;
+
+        groupDate.push(
+          ("0" + (groupDay[j].getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + groupDay[j].getDate()).slice(-2) +
+            "/" +
+            groupDay[j].getFullYear()
+        );
+      }
+      this.groupDate = groupDate;
+
+      for (let i = 0; i < this.activities.length; i++) {
+        for (let j = 0; j < groupDay.length; j++) {
+          let nowDay = this.activities[i].time;
+          let formatGroupDay =
+            ("0" + (groupDay[j].getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + groupDay[j].getDate()).slice(-2) +
+            "/" +
+            groupDay[j].getFullYear();
+          if (formatGroupDay == nowDay) {
+            if (this.activities[i].value == "+") {
+              groupDay[j]["positive"] += 1;
+            } else if (this.activities[i].value == "-") {
+              groupDay[j]["negative"] += 1;
+            } else if (this.activities[i].value == "=") {
+              groupDay[j]["neutral"] += 1;
+            }
+            break;
+          }
+        }
+      }
+      this.groupDay = groupDay;
 
       this.getTotalActivities();
     },
@@ -141,6 +267,8 @@ export default {
       ).length;
       this.totalActivities = Object.keys(this.activities).length;
     },
+
+    async getAnalyticsDay() {},
   },
 };
 </script>
@@ -192,7 +320,7 @@ export default {
           <!-- <h3 class="text-4xl">+</h3> -->
         </div>
         <div class="grid grid-rows-2">
-          <h2 class="text-lg">Positive</h2>
+          <h2 class="text-lg">Positif</h2>
           <h2 class="text-4xl">{{ totalPositiveActivities }}</h2>
         </div>
       </div>
@@ -204,7 +332,7 @@ export default {
           <!-- <h3 class="text-4xl">-</h3> -->
         </div>
         <div class="grid grid-rows-2">
-          <h2 class="text-lg">Negative</h2>
+          <h2 class="text-lg">Negatif</h2>
           <h2 class="text-4xl">{{ totalNegativeActivities }}</h2>
         </div>
       </div>
@@ -216,10 +344,30 @@ export default {
           <!-- <h3 class="text-4xl">=</h3> -->
         </div>
         <div class="grid grid-rows-2">
-          <h2 class="text-lg">Neutral</h2>
+          <h2 class="text-lg">Netral</h2>
           <h2 class="text-4xl">{{ totalNeutralActivities }}</h2>
         </div>
       </div>
+    </div>
+
+    <div
+      style="
+        height: 600px;
+        width: 1000px;
+        display: flex;
+        flex-direction: column;
+      "
+      v-if="
+        pieChart != null &&
+        pieChart.type != undefined &&
+        pieChart.data != undefined
+      "
+    >
+      <vue3-chart-js
+        v-bind="pieChart"
+        :type="pieChart.type"
+        :data="pieChart.data"
+      />
     </div>
   </div>
 </template>
