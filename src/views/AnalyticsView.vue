@@ -19,6 +19,7 @@ export default {
       totalNegativeActivities: 0,
       totalNeutralActivities: 0,
       pieChart: {},
+      chartKey: 0,
 
       groupDate: [],
       groupDay: [],
@@ -218,7 +219,8 @@ export default {
         }
       }
       this.groupDay = groupDay;
-
+      this.pieChart = await this.makeChart();
+      this.chartKey += 1;
       this.getTotalActivities();
     },
 
@@ -367,6 +369,7 @@ export default {
         v-bind="pieChart"
         :type="pieChart.type"
         :data="pieChart.data"
+        :key="chartKey"
       />
     </div>
   </div>
