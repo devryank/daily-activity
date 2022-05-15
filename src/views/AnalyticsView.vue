@@ -37,16 +37,26 @@ export default {
     // let dateString = "05/13/2022";
     await this.getWeekActivities();
     // console.log(new Date(dateString));
-
-    this.pieChart = await this.makeChart();
   },
   methods: {
     async makeChart() {
-      for (let i = 0; i < this.groupDay.length; i++) {
-        // console.log(this.groupDate[i]);
-        this.chartPositiveActivities[i] = this.groupDay[i].positive;
-        this.chartNegativeActivities[i] = this.groupDay[i].negative;
-        this.chartNeutralActivities[i] = this.groupDay[i].neutral;
+      if (this.period == "year") {
+        for (let i = 0; i < this.groupDay.length; i++) {
+          console.log(i);
+          this.chartPositiveActivities[i] =
+            this.groupDay[i][("0" + (i + 1)).slice(-2)].positive;
+          this.chartNegativeActivities[i] =
+            this.groupDay[i][("0" + (i + 1)).slice(-2)].negative;
+          this.chartNeutralActivities[i] =
+            this.groupDay[i][("0" + (i + 1)).slice(-2)].neutral;
+        }
+      } else {
+        for (let i = 0; i < this.groupDay.length; i++) {
+          // console.log(this.groupDate[i]);
+          this.chartPositiveActivities[i] = this.groupDay[i].positive;
+          this.chartNegativeActivities[i] = this.groupDay[i].negative;
+          this.chartNeutralActivities[i] = this.groupDay[i].neutral;
+        }
       }
       let pieChart = {
         type: "line",
@@ -75,6 +85,11 @@ export default {
           interaction: {
             intersect: false,
             axis: "x",
+          },
+          x: {
+            ticks: {
+              maxTicksLimit: 15,
+            },
           },
           scales: {
             y: {
@@ -166,20 +181,16 @@ export default {
       saturday.setDate(saturday.getDate() - saturday.getDay() + 6);
       saturday = new Date(saturday.setHours(23, 59, 59, 999));
 
-      let dateInRange = this.getDatesInRange(sunday, saturday);
-
       // get this week activities
       this.activities = this.activities.filter((d) => {
         return new Date(d.time) >= sunday && new Date(d.time) < saturday;
       });
 
-      // let previousDay = "";
-      let tempGroupDay = [];
-      let groupDay = [];
-      for (let index = 0; index < dateInRange.length; index++) {
-        tempGroupDay.push(dateInRange[index]);
-      }
+      let dateInRange = this.getDatesInRange(sunday, saturday);
 
+      let tempGroupDay = [];
+      tempGroupDay = dateInRange;
+      let groupDay = [];
       let groupDate = [];
       for (let j = 0; j < tempGroupDay.length; j++) {
         groupDay[j] = tempGroupDay[j];
@@ -196,7 +207,7 @@ export default {
         );
       }
       this.groupDate = groupDate;
-
+      console.log(groupDay[0]);
       for (let i = 0; i < this.activities.length; i++) {
         for (let j = 0; j < groupDay.length; j++) {
           let nowDay = this.activities[i].time;
@@ -237,6 +248,7 @@ export default {
       firstDay = new Date(firstDay.getFullYear(), firstDay.getMonth(), 1);
       // console.log(new Date(firstDay.getFullYear(), firstDay.getMonth(), 1));
 
+      // Get the last day of Month
       let lastDay = new Date(start);
       lastDay = new Date(lastDay.getFullYear(), lastDay.getMonth() + 1, 0);
       lastDay = new Date(lastDay.setHours(23, 59, 59, 999));
@@ -245,8 +257,149 @@ export default {
       this.activities = this.activities.filter((d) => {
         return new Date(d.time) >= firstDay && new Date(d.time) < lastDay;
       });
+
+      let dateInRange = this.getDatesInRange(firstDay, lastDay);
+
+      let tempGroupDay = [];
+      tempGroupDay = dateInRange;
+      let groupDay = [];
+
+      let groupDate = [];
+      for (let j = 0; j < tempGroupDay.length; j++) {
+        groupDay[j] = tempGroupDay[j];
+        groupDay[j]["positive"] = 0;
+        groupDay[j]["negative"] = 0;
+        groupDay[j]["neutral"] = 0;
+
+        groupDate.push(
+          ("0" + (groupDay[j].getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + groupDay[j].getDate()).slice(-2) +
+            "/" +
+            groupDay[j].getFullYear()
+        );
+      }
+      this.groupDate = groupDate;
+
+      for (let i = 0; i < this.activities.length; i++) {
+        for (let j = 0; j < groupDay.length; j++) {
+          let nowDay = this.activities[i].time;
+          let formatGroupDay =
+            ("0" + (groupDay[j].getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + groupDay[j].getDate()).slice(-2) +
+            "/" +
+            groupDay[j].getFullYear();
+          if (formatGroupDay == nowDay) {
+            if (this.activities[i].value == "+") {
+              groupDay[j]["positive"] += 1;
+            } else if (this.activities[i].value == "-") {
+              groupDay[j]["negative"] += 1;
+            } else if (this.activities[i].value == "=") {
+              groupDay[j]["neutral"] += 1;
+            }
+            break;
+          }
+        }
+      }
+      this.groupDay = groupDay;
+
+      this.pieChart = await this.makeChart();
+      console.log(this.pieChart);
+      this.chartKey += 1;
       this.getTotalActivities();
       // this.getTotalActivities();
+    },
+
+    async getYearActivities() {
+      this.period = "year";
+      // If no date object supplied, use current date
+      // Copy date so don't modify supplied date
+      let date = new Date(Date.now());
+      let start = date ? new Date(date) : new Date();
+
+      this.activities = await this.getActivitiesFromDb();
+      // Get the first day of Year
+      let firstDay = new Date(start);
+      firstDay = new Date(firstDay.getFullYear(), 0, 1);
+      // console.log(new Date(firstDay.getFullYear(), firstDay.getMonth(), 1));
+
+      // Get the last day of Year
+      let lastDay = new Date(start);
+      lastDay = new Date(lastDay.getFullYear(), 11, 31);
+      lastDay = new Date(lastDay.setHours(23, 59, 59, 999));
+
+      // get this month activities
+      this.activities = this.activities.filter((d) => {
+        return new Date(d.time) >= firstDay && new Date(d.time) < lastDay;
+      });
+
+      let dateInRange = this.getDatesInRange(firstDay, lastDay);
+
+      // let previousDay = "";
+      let nameMonth = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ];
+
+      let tempGroupDay = [
+        { "01": [] },
+        { "02": [] },
+        { "03": [] },
+        { "04": [] },
+        { "05": [] },
+        { "06": [] },
+        { "07": [] },
+        { "08": [] },
+        { "09": [] },
+        { 10: [] },
+        { 11: [] },
+        { 12: [] },
+      ];
+      let groupDay = [];
+      let groupDate = [];
+      // console.log(tempGroupDay[0]);
+      // console.log(tempGroupDay[10]);
+
+      for (let j = 0; j < tempGroupDay.length; j++) {
+        groupDay[j] = tempGroupDay[j];
+        groupDay[j][Object.keys(tempGroupDay[j])]["positive"] = 0;
+        groupDay[j][Object.keys(tempGroupDay[j])]["negative"] = 0;
+        groupDay[j][Object.keys(tempGroupDay[j])]["neutral"] = 0;
+      }
+      // this.groupDate = groupDate;
+      for (let i = 0; i < this.activities.length; i++) {
+        for (let j = 0; j < groupDay.length; j++) {
+          let nowDay = this.activities[i].time.substring(0, 2);
+          let formatGroupDay = Object.keys(groupDay[j])[0];
+          if (formatGroupDay == nowDay) {
+            if (this.activities[i].value == "+") {
+              groupDay[j][Object.keys(tempGroupDay[j])]["positive"] += 1;
+            } else if (this.activities[i].value == "-") {
+              groupDay[j][Object.keys(tempGroupDay[j])]["negative"] += 1;
+            } else if (this.activities[i].value == "=") {
+              groupDay[j][Object.keys(tempGroupDay[j])]["neutral"] += 1;
+            }
+            break;
+          }
+        }
+      }
+      this.groupDay = groupDay;
+      this.groupDate = nameMonth;
+      this.pieChart = await this.makeChart();
+      console.log("groupday");
+      this.chartKey += 1;
+      this.getTotalActivities();
     },
 
     async getTotalActivities() {
@@ -301,7 +454,7 @@ export default {
         Bulan Ini
       </button>
       <button
-        @click="getWeekActivities"
+        @click="getYearActivities"
         :class="
           'mr-2 py-3 px-6' +
           (period == 'year'
