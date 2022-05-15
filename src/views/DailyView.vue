@@ -333,13 +333,21 @@ export default {
   <div>
     <h2 class="text-xl mb-5">{{ todayName }}, {{ time }}</h2>
     <label for="Name">Name</label>
-    <input type="text" v-model="data.name" class="mx-2 text-black" />
+    <input
+      type="text"
+      v-model="data.name"
+      class="mx-2 text-black border-2 border-gray-600"
+    />
     <small class="text-red-600 text-sm">{{ errors.name }}</small>
     <br />
     <br />
 
     <label for="Value">Value</label>
-    <input type="text" v-model="data.value" class="mx-2 text-black" />
+    <input
+      type="text"
+      v-model="data.value"
+      class="mx-2 text-black border-2 border-gray-600"
+    />
     <small class="text-red-600 text-sm">{{ errors.value }}</small>
     <br />
     <button
