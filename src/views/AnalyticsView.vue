@@ -31,18 +31,15 @@ export default {
   async created() {
     this.db = await this.getDb();
     this.activities = await this.getActivitiesFromDb();
-    // console.log(this.activities);
     this.ready = true;
-    // await this.getWeekActivities(new Date(Date.now()));
-    // let dateString = "05/13/2022";
     await this.getWeekActivities();
-    // console.log(new Date(dateString));
   },
   methods: {
     async makeChart() {
       if (this.period == "year") {
+        // data chart specific for year period
         for (let i = 0; i < this.groupDay.length; i++) {
-          console.log(i);
+          // for example, positive activities in January is this.groupDay[0][01].positive
           this.chartPositiveActivities[i] =
             this.groupDay[i][("0" + (i + 1)).slice(-2)].positive;
           this.chartNegativeActivities[i] =
@@ -51,8 +48,8 @@ export default {
             this.groupDay[i][("0" + (i + 1)).slice(-2)].neutral;
         }
       } else {
+        // data chart for today and month
         for (let i = 0; i < this.groupDay.length; i++) {
-          // console.log(this.groupDate[i]);
           this.chartPositiveActivities[i] = this.groupDay[i].positive;
           this.chartNegativeActivities[i] = this.groupDay[i].negative;
           this.chartNeutralActivities[i] = this.groupDay[i].neutral;
@@ -94,7 +91,6 @@ export default {
           scales: {
             y: {
               ticks: {
-                // forces step size to be 50 units
                 stepSize: 1,
               },
             },
@@ -186,18 +182,22 @@ export default {
         return new Date(d.time) >= sunday && new Date(d.time) < saturday;
       });
 
+      // get list dates between two dates
       let dateInRange = this.getDatesInRange(sunday, saturday);
 
       let tempGroupDay = [];
       tempGroupDay = dateInRange;
       let groupDay = [];
       let groupDate = [];
+
       for (let j = 0; j < tempGroupDay.length; j++) {
         groupDay[j] = tempGroupDay[j];
+        // declare default value positive, negative, and neutral for each day
         groupDay[j]["positive"] = 0;
         groupDay[j]["negative"] = 0;
         groupDay[j]["neutral"] = 0;
 
+        // x axis label chart
         groupDate.push(
           ("0" + (groupDay[j].getMonth() + 1)).slice(-2) +
             "/" +
@@ -207,7 +207,6 @@ export default {
         );
       }
       this.groupDate = groupDate;
-      console.log(groupDay[0]);
       for (let i = 0; i < this.activities.length; i++) {
         for (let j = 0; j < groupDay.length; j++) {
           let nowDay = this.activities[i].time;
@@ -231,7 +230,8 @@ export default {
       }
       this.groupDay = groupDay;
       this.pieChart = await this.makeChart();
-      this.chartKey += 1;
+      this.chartKey += 1; // update chart by changing the key
+
       this.getTotalActivities();
     },
 
@@ -246,7 +246,6 @@ export default {
       // Get the first Month
       let firstDay = new Date(start);
       firstDay = new Date(firstDay.getFullYear(), firstDay.getMonth(), 1);
-      // console.log(new Date(firstDay.getFullYear(), firstDay.getMonth(), 1));
 
       // Get the last day of Month
       let lastDay = new Date(start);
@@ -258,6 +257,7 @@ export default {
         return new Date(d.time) >= firstDay && new Date(d.time) < lastDay;
       });
 
+      // get list dates between two dates
       let dateInRange = this.getDatesInRange(firstDay, lastDay);
 
       let tempGroupDay = [];
@@ -267,10 +267,12 @@ export default {
       let groupDate = [];
       for (let j = 0; j < tempGroupDay.length; j++) {
         groupDay[j] = tempGroupDay[j];
+        // declare default value positive, negative, and neutral for each day
         groupDay[j]["positive"] = 0;
         groupDay[j]["negative"] = 0;
         groupDay[j]["neutral"] = 0;
 
+        // x axis label chart
         groupDate.push(
           ("0" + (groupDay[j].getMonth() + 1)).slice(-2) +
             "/" +
@@ -303,12 +305,10 @@ export default {
         }
       }
       this.groupDay = groupDay;
-
       this.pieChart = await this.makeChart();
-      console.log(this.pieChart);
-      this.chartKey += 1;
+      this.chartKey += 1; // update chart by changing the key
+
       this.getTotalActivities();
-      // this.getTotalActivities();
     },
 
     async getYearActivities() {
@@ -322,7 +322,6 @@ export default {
       // Get the first day of Year
       let firstDay = new Date(start);
       firstDay = new Date(firstDay.getFullYear(), 0, 1);
-      // console.log(new Date(firstDay.getFullYear(), firstDay.getMonth(), 1));
 
       // Get the last day of Year
       let lastDay = new Date(start);
@@ -336,7 +335,6 @@ export default {
 
       let dateInRange = this.getDatesInRange(firstDay, lastDay);
 
-      // let previousDay = "";
       let nameMonth = [
         "Januari",
         "Februari",
@@ -367,17 +365,14 @@ export default {
         { 12: [] },
       ];
       let groupDay = [];
-      let groupDate = [];
-      // console.log(tempGroupDay[0]);
-      // console.log(tempGroupDay[10]);
 
-      for (let j = 0; j < tempGroupDay.length; j++) {
-        groupDay[j] = tempGroupDay[j];
-        groupDay[j][Object.keys(tempGroupDay[j])]["positive"] = 0;
-        groupDay[j][Object.keys(tempGroupDay[j])]["negative"] = 0;
-        groupDay[j][Object.keys(tempGroupDay[j])]["neutral"] = 0;
+      for (let i = 0; i < tempGroupDay.length; i++) {
+        groupDay[i] = tempGroupDay[i];
+        groupDay[i][Object.keys(tempGroupDay[i])]["positive"] = 0;
+        groupDay[i][Object.keys(tempGroupDay[i])]["negative"] = 0;
+        groupDay[i][Object.keys(tempGroupDay[i])]["neutral"] = 0;
       }
-      // this.groupDate = groupDate;
+
       for (let i = 0; i < this.activities.length; i++) {
         for (let j = 0; j < groupDay.length; j++) {
           let nowDay = this.activities[i].time.substring(0, 2);
@@ -397,8 +392,7 @@ export default {
       this.groupDay = groupDay;
       this.groupDate = nameMonth;
       this.pieChart = await this.makeChart();
-      console.log("groupday");
-      this.chartKey += 1;
+      this.chartKey += 1; // update chart by changing the key
       this.getTotalActivities();
     },
 
@@ -420,10 +414,9 @@ export default {
           return d.value == "=";
         })
       ).length;
+
       this.totalActivities = Object.keys(this.activities).length;
     },
-
-    async getAnalyticsDay() {},
   },
 };
 </script>
@@ -472,7 +465,6 @@ export default {
           class="grid grid-rows-1 mx-5 p-7 my-auto bg-emerald-700 rounded-lg"
         >
           <font-awesome-icon icon="plus" class="text-2xl" />
-          <!-- <h3 class="text-4xl">+</h3> -->
         </div>
         <div class="grid grid-rows-2">
           <h2 class="text-lg">Positif</h2>
@@ -484,7 +476,6 @@ export default {
       <div class="flex my-5">
         <div class="grid grid-rows-1 mx-5 p-7 my-auto bg-rose-700 rounded-lg">
           <font-awesome-icon icon="minus" class="text-2xl" />
-          <!-- <h3 class="text-4xl">-</h3> -->
         </div>
         <div class="grid grid-rows-2">
           <h2 class="text-lg">Negatif</h2>
@@ -496,7 +487,6 @@ export default {
       <div class="flex my-5">
         <div class="grid grid-rows-1 mx-5 p-7 my-auto bg-indigo-700 rounded-lg">
           <font-awesome-icon icon="equals" class="text-2xl" />
-          <!-- <h3 class="text-4xl">=</h3> -->
         </div>
         <div class="grid grid-rows-2">
           <h2 class="text-lg">Netral</h2>
