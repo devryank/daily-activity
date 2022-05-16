@@ -8,10 +8,93 @@ export default {
   data() {
     return {
       path: "",
+      DB_NAME: "acitivitydb",
+      DB_VERSION: 1,
+      db: null,
+      ready: false,
+      activities: [],
+      time: "",
     };
   },
   created() {
     this.path = window.location.href.split("/")["3"];
+    this.exportToJSON();
+  },
+  methods: {
+    async getDb() {
+      return new Promise((resolve, reject) => {
+        let request = window.indexedDB.open(this.DB_NAME, this.DB_VERSION);
+
+        request.onerror = (e) => {
+          console.log("Error opening db", e);
+          reject("Error");
+        };
+
+        request.onsuccess = (e) => {
+          resolve(e.target.result);
+        };
+
+        request.onupgradeneeded = (e) => {
+          console.log("onupgradeneeded");
+          let db = e.target.result;
+          let objectStore = db.createObjectStore("activities", {
+            autoIncrement: true,
+            keyPath: "id",
+          });
+        };
+      });
+    },
+
+    async getActivitiesFromDb() {
+      return new Promise((resolve, reject) => {
+        let trans = this.db.transaction(["activities"], "readonly");
+        trans.oncomplete = (e) => {
+          resolve(activities);
+        };
+
+        let store = trans.objectStore("activities");
+        let activities = [];
+
+        store.openCursor().onsuccess = (e) => {
+          let cursor = e.target.result;
+          if (cursor) {
+            activities.push(cursor.value);
+            cursor.continue();
+          }
+        };
+        this.filterToday();
+      });
+    },
+
+    async filterToday() {
+      let timestamp = new Date(Date.now());
+      this.time =
+        ("0" + (timestamp.getMonth() + 1)).slice(-2) +
+        "/" +
+        ("0" + timestamp.getDate()).slice(-2) +
+        "/" +
+        timestamp.getFullYear();
+
+      this.activities = this.activities.filter((d) => {
+        return d.time == this.time;
+      });
+    },
+
+    async exportToJSON() {
+      this.db = await this.getDb();
+      this.activities = await this.getActivitiesFromDb();
+      var data =
+        "text/json;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(this.activities));
+
+      var a = document.createElement("a");
+      a.href = "data:" + data;
+      a.download = "data.json";
+      a.innerHTML = "download JSON";
+
+      var container = document.getElementById("download");
+      container.appendChild(a);
+    },
   },
 };
 </script>
@@ -41,6 +124,10 @@ export default {
       >
         Analytics
       </a>
+      <span
+        class="mr-2 py-3 px-6 bg-indigo-800 text-white dark:hover:bg-indigo-600"
+        id="download"
+      ></span>
     </div>
   </div>
   <div class="w-3/4 mx-auto relative mt-5">
