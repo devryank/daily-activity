@@ -353,12 +353,7 @@ export default {
     <button
       v-if="ready && !openEdit"
       @click="addActivity"
-      class="
-        dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600
-        py-2
-        px-4
-        my-3
-      "
+      class="my-4 py-2 px-4 bg-indigo-800 text-white dark:hover:bg-indigo-600"
     >
       Tambah
     </button>
@@ -394,7 +389,7 @@ export default {
         class="
           text-xs text-gray-700
           uppercase
-          bg-gray-50
+          bg-gray-300
           dark:bg-gray-700 dark:text-gray-400
         "
       >
@@ -408,20 +403,20 @@ export default {
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-if="activities.length > 0">
         <tr
           class="
             border-b
             dark:bg-gray-800 dark:border-gray-700
             odd:bg-white
-            even:bg-gray-50
+            even:bg-gray-300
             odd:dark:bg-gray-800
             even:dark:bg-gray-700
           "
           v-for="(activity, index) in activities"
           :key="index"
         >
-          <th
+          <td
             scope="row"
             class="
               px-6
@@ -433,7 +428,7 @@ export default {
             "
           >
             {{ activity.name }}
-          </th>
+          </td>
           <td class="px-6 py-4">{{ activity.value }}</td>
           <td class="px-6 py-4 text-right">
             <a
@@ -459,6 +454,33 @@ export default {
               @click="deleteActivity(activity.id)"
               >Delete</a
             >
+          </td>
+        </tr>
+      </tbody>
+      <tbody v-if="activities.length == 0">
+        <tr
+          class="
+            border-b
+            dark:bg-gray-800 dark:border-gray-700
+            odd:bg-white
+            even:bg-gray-50
+            odd:dark:bg-gray-800
+            even:dark:bg-gray-700
+          "
+        >
+          <td
+            scope="row"
+            class="
+              px-6
+              py-4
+              font-medium
+              text-gray-900
+              dark:text-white
+              whitespace-nowrap
+            "
+            colspan="3"
+          >
+            Tidak ada data
           </td>
         </tr>
       </tbody>

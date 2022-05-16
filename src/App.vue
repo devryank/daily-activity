@@ -25,7 +25,7 @@ export default {
           'mr-2 py-3 px-6' +
           (path == 'daily'
             ? ' dark:bg-transparent border-2 border-indigo-800 dark:text-white dark:hover:bg-indigo-600 dark:hover:border-indigo-600'
-            : ' dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600')
+            : ' bg-indigo-800 text-white dark:hover:bg-indigo-600')
         "
       >
         Home
@@ -36,7 +36,7 @@ export default {
           'mr-2 py-3 px-6' +
           (path == 'analytics'
             ? ' dark:bg-transparent border-2 border-indigo-800 dark:text-white dark:hover:bg-indigo-600 dark:hover:border-indigo-600'
-            : ' dark:bg-indigo-800 dark:text-white dark:hover:bg-indigo-600')
+            : ' bg-indigo-800 text-white dark:hover:bg-indigo-600')
         "
       >
         Analytics
