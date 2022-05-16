@@ -451,7 +451,7 @@ export default {
         :class="
           'mr-2 py-3 px-6' +
           (period == 'year'
-            ? ' dark:bg-transparent border-2 border-indigo-800 dark:text-white hover:bg-indigo-600 hover:border-indigo-600'
+            ? ' dark:bg-transparent border-2 border-indigo-800 text-indigo-800 dark:text-white dark:hover:bg-indigo-600 hover:border-indigo-600'
             : ' bg-indigo-800 dark:text-white hover:bg-indigo-600')
         "
       >
